@@ -40,3 +40,5 @@ export interface User {
   hobbies: string[]
   details: string
 }
+
+export type GenderFilter = 'all' | Gender
