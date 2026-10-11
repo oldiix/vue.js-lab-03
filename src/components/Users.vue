@@ -58,8 +58,18 @@ const visibleUsers = computed(() => {
   }
 })
 
+const isDefaultState = computed(
+  () => genderFilter.value === 'all' && ageFilter.value === 'all' && sortOption.value === 'none',
+)
+
 function compareByName(a: User, b: User): number {
   return `${a.name.first} ${a.name.last}`.localeCompare(`${b.name.first} ${b.name.last}`)
+}
+
+function resetAll(): void {
+  genderFilter.value = 'all'
+  ageFilter.value = 'all'
+  sortOption.value = 'none'
 }
 </script>
 
@@ -107,6 +117,15 @@ function compareByName(a: User, b: User): number {
           {{ option.label }}
         </button>
       </div>
+
+      <button
+        class="users__button users__button--reset"
+        type="button"
+        :disabled="isDefaultState"
+        @click="resetAll"
+      >
+        Очистити все
+      </button>
     </div>
 
     <p class="users__counter">
@@ -181,6 +200,17 @@ function compareByName(a: User, b: User): number {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
+}
+
+.users__button--reset {
+  margin-left: auto;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.users__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .users__counter {
