@@ -42,3 +42,4 @@ export interface User {
 }
 
 export type GenderFilter = 'all' | Gender
+export type AgeFilter = 'all' | 'adult'

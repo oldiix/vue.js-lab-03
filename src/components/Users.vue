@@ -2,7 +2,7 @@
 import {computed, ref} from 'vue'
 import UserCard from '@/components/UserCard.vue'
 import {users as usersData} from '@/data/users'
-import type {GenderFilter, User} from '@/types/user'
+import type {AgeFilter, GenderFilter, User} from '@/types/user'
 
 interface ToolbarOption<T> {
   value: T
@@ -15,12 +15,22 @@ const genderOptions: ToolbarOption<GenderFilter>[] = [
   {value: 'female', label: 'Жінки'},
 ]
 
+const ageOptions: ToolbarOption<AgeFilter>[] = [
+  {value: 'all', label: 'Всі'},
+  {value: 'adult', label: '18+'},
+]
+
 const users = ref<User[]>(usersData)
 
 const genderFilter = ref<GenderFilter>('all')
+const ageFilter = ref<AgeFilter>('all')
 
 const filteredUsers = computed(() =>
-  users.value.filter((user) => genderFilter.value === 'all' || user.gender === genderFilter.value),
+  users.value.filter((user) => {
+    const matchesGender = genderFilter.value === 'all' || user.gender === genderFilter.value
+    const matchesAge = ageFilter.value === 'all' || user.dob.age >= 18
+    return matchesGender && matchesAge
+  }),
 )
 </script>
 
@@ -36,6 +46,20 @@ const filteredUsers = computed(() =>
           :class="{ 'users__button--active': genderFilter === option.value }"
           type="button"
           @click="genderFilter = option.value"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+
+      <div class="users__group">
+        <span class="users__label">Вік:</span>
+        <button
+          v-for="option in ageOptions"
+          :key="option.value"
+          class="users__button"
+          :class="{ 'users__button--active': ageFilter === option.value }"
+          type="button"
+          @click="ageFilter = option.value"
         >
           {{ option.label }}
         </button>
