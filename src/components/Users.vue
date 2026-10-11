@@ -2,7 +2,7 @@
 import {computed, ref} from 'vue'
 import UserCard from '@/components/UserCard.vue'
 import {users as usersData} from '@/data/users'
-import type {AgeFilter, GenderFilter, User} from '@/types/user'
+import type {AgeFilter, GenderFilter, SortOption, User} from '@/types/user'
 
 interface ToolbarOption<T> {
   value: T
@@ -20,10 +20,18 @@ const ageOptions: ToolbarOption<AgeFilter>[] = [
   {value: 'adult', label: '18+'},
 ]
 
+const sortOptions: ToolbarOption<SortOption>[] = [
+  {value: 'name-asc', label: "Ім'я ↑"},
+  {value: 'name-desc', label: "Ім'я ↓"},
+  {value: 'age-asc', label: 'Вік ↑'},
+  {value: 'age-desc', label: 'Вік ↓'},
+]
+
 const users = ref<User[]>(usersData)
 
 const genderFilter = ref<GenderFilter>('all')
 const ageFilter = ref<AgeFilter>('all')
+const sortOption = ref<SortOption>('none')
 
 const filteredUsers = computed(() =>
   users.value.filter((user) => {
@@ -32,6 +40,27 @@ const filteredUsers = computed(() =>
     return matchesGender && matchesAge
   }),
 )
+
+const visibleUsers = computed(() => {
+  const result = [...filteredUsers.value]
+
+  switch (sortOption.value) {
+    case 'name-asc':
+      return result.sort(compareByName)
+    case 'name-desc':
+      return result.sort((a, b) => compareByName(b, a))
+    case 'age-asc':
+      return result.sort((a, b) => a.dob.age - b.dob.age)
+    case 'age-desc':
+      return result.sort((a, b) => b.dob.age - a.dob.age)
+    default:
+      return result
+  }
+})
+
+function compareByName(a: User, b: User): number {
+  return `${a.name.first} ${a.name.last}`.localeCompare(`${b.name.first} ${b.name.last}`)
+}
 </script>
 
 <template>
@@ -64,10 +93,24 @@ const filteredUsers = computed(() =>
           {{ option.label }}
         </button>
       </div>
+
+      <div class="users__group">
+        <span class="users__label">Сортування:</span>
+        <button
+          v-for="option in sortOptions"
+          :key="option.value"
+          class="users__button"
+          :class="{ 'users__button--active': sortOption === option.value }"
+          type="button"
+          @click="sortOption = option.value"
+        >
+          {{ option.label }}
+        </button>
+      </div>
     </div>
 
     <p class="users__counter">
-      Показано {{ filteredUsers.length }} з {{ users.length }}
+      Показано {{ visibleUsers.length }} з {{ users.length }}
     </p>
 
     <p
@@ -77,7 +120,7 @@ const filteredUsers = computed(() =>
       Список юзерів пустий
     </p>
     <p
-      v-else-if="filteredUsers.length === 0"
+      v-else-if="visibleUsers.length === 0"
       class="users__empty"
     >
       Немає юзерів, що відповідають фільтрам
@@ -87,7 +130,7 @@ const filteredUsers = computed(() =>
       class="users__list"
     >
       <UserCard
-        v-for="user in filteredUsers"
+        v-for="user in visibleUsers"
         :key="user.id"
         :user="user"
       />

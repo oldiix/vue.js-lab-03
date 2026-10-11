@@ -43,3 +43,4 @@ export interface User {
 
 export type GenderFilter = 'all' | Gender
 export type AgeFilter = 'all' | 'adult'
+export type SortOption = 'none' | 'name-asc' | 'name-desc' | 'age-asc' | 'age-desc'
