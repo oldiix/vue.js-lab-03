@@ -9,7 +9,16 @@ const users = ref<User[]>(usersData)
 
 <template>
   <section class="users">
-    <div class="users__list">
+    <p
+      v-if="users.length === 0"
+      class="users__empty"
+    >
+      Список юзерів пустий
+    </p>
+    <div
+      v-else
+      class="users__list"
+    >
       <UserCard
         v-for="user in users"
         :key="user.id"
@@ -20,6 +29,14 @@ const users = ref<User[]>(usersData)
 </template>
 
 <style scoped>
+.users__empty {
+  padding: 40px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
 .users__list {
   display: grid;
   gap: 24px;
