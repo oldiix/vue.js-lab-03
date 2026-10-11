@@ -17,4 +17,7 @@ export const user: User = {
   phone: '02-689-410',
   cell: '043-730-12-94',
   picture: 'https://randomuser.me/api/portraits/women/87.jpg',
+  hobbies: ['Travel', 'Photography', 'Hiking', 'Reading', 'Cooking', 'Music'],
+  details: 'UX designer from Finland. Loves northern lights and long forest walks.',
 }
+

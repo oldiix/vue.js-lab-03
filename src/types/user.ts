@@ -1,4 +1,5 @@
 export type Gender = 'male' | 'female'
+export type AgeGroup = 'minor' | 'young' | 'adult' | 'senior'
 
 export interface UserName {
   title: string
@@ -36,4 +37,6 @@ export interface User {
   phone: string
   cell: string
   picture: string
+  hobbies: string[]
+  details: string
 }

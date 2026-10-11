@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import {ref} from 'vue'
 import {user} from '@/data/users'
+import type {AgeGroup} from '@/types/user'
 
 const fullName = `${user.name.first} ${user.name.last}`
 const titledName = `${user.name.title} ${fullName}`
@@ -8,10 +10,36 @@ const birthDate = new Date(user.dob.date).toLocaleDateString('uk-UA', {timeZone:
 const shortAddress = `${user.location.city}, ${user.location.state}, ${user.location.country}`
 const street = `${user.location.street.number} ${user.location.street.name}`
 const timezone = `${user.location.timezone.offset} (${user.location.timezone.description})`
+
+const age = user.dob.age
+const isAdult = age >= 18
+
+function getAgeGroup(value: number): AgeGroup {
+  if (value < 18) return 'minor'
+  if (value <= 30) return 'young'
+  if (value <= 50) return 'adult'
+  return 'senior'
+}
+
+const ageGroup = getAgeGroup(age)
+
+const isDetailsVisible = ref(false)
+
+function toggleDetails(): void {
+  isDetailsVisible.value = !isDetailsVisible.value
+}
 </script>
 
 <template>
-  <article class="user-card">
+  <article
+    class="user-card"
+    :class="{
+      'user-card--minor': ageGroup === 'minor',
+      'user-card--young': ageGroup === 'young',
+      'user-card--adult': ageGroup === 'adult',
+      'user-card--senior': ageGroup === 'senior',
+    }"
+  >
     <section class="user-card__aside">
       <img
         class="user-card__photo"
@@ -28,8 +56,14 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
       <p class="user-card__meta">
         <span>{{ genderLabel }}</span>
         <span class="user-card__divider" />
-        <span>{{ user.dob.age }} р.</span>
+        <span v-if="isAdult">{{ age }} р.</span>
+        <span
+          v-else
+          class="user-card__muted"
+        >вік приховано</span>
       </p>
+
+      <span class="user-card__badge">{{ ageGroup }}</span>
 
       <ul class="user-card__contacts">
         <li>📍 {{ shortAddress }}</li>
@@ -40,6 +74,22 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
     </section>
 
     <section class="user-card__main">
+      <button
+        class="user-card__toggle"
+        type="button"
+        :aria-expanded="isDetailsVisible"
+        @click="toggleDetails"
+      >
+        <span>Про мене</span>
+        <span>{{ isDetailsVisible ? '▲' : '▼' }}</span>
+      </button>
+      <p
+        v-show="isDetailsVisible"
+        class="user-card__details"
+      >
+        {{ user.details }}
+      </p>
+
       <h3 class="user-card__heading">
         Особиста інформація
       </h3>
@@ -75,6 +125,19 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
         <dt>Часовий пояс</dt>
         <dd>{{ timezone }}</dd>
       </dl>
+
+      <h3 class="user-card__heading">
+        Хобі
+      </h3>
+      <ul class="user-card__hobbies">
+        <li
+          v-for="hobby in user.hobbies"
+          :key="hobby"
+          class="user-card__hobby"
+        >
+          {{ hobby }}
+        </li>
+      </ul>
     </section>
   </article>
 </template>
@@ -92,6 +155,26 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 8px 24px rgb(15 23 42 / 8%);
+}
+
+.user-card--minor {
+  --accent: #0d9488;
+  --accent-soft: #ccfbf1;
+}
+
+.user-card--young {
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+}
+
+.user-card--adult {
+  --accent: #7c3aed;
+  --accent-soft: #ede9fe;
+}
+
+.user-card--senior {
+  --accent: #d97706;
+  --accent-soft: #fef3c7;
 }
 
 .user-card__aside {
@@ -129,6 +212,22 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
   background: #cbd5e1;
 }
 
+.user-card__muted {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.user-card__badge {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 .user-card__contacts {
   display: grid;
   gap: 10px;
@@ -140,6 +239,27 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
 
 .user-card__main {
   padding: 24px;
+}
+
+.user-card__toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: #0f172a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-card__details {
+  margin: 8px 0 0;
+  padding: 12px 18px;
+  border-left: 4px solid var(--accent);
+  background: #f8fafc;
 }
 
 .user-card__heading {
@@ -162,6 +282,23 @@ const timezone = `${user.location.timezone.offset} (${user.location.timezone.des
   margin: 0;
   color: #0f172a;
   overflow-wrap: anywhere;
+}
+
+.user-card__hobbies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.user-card__hobby {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 760px) {
